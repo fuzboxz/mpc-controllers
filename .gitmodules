@@ -1,0 +1,3 @@
+[submodule "examples/force-link"]
+	path = examples/force-link
+	url = https://github.com/sd88me/forcelink.git
