@@ -11,6 +11,12 @@ Each wall lists how we hit it and what (if anything) gets round it.
 | **Note editing only on the selected clip**: no per-clip events object | FINDINGS 33 | Select the clip first, or native route |
 | **Scale/root of pad perform is invisible**: `padPerform`/`keyboardControl` are only the two buttons | FINDINGS 29 | Read from MPC's memory (offsets per build) |
 | **`qlinks[i].GetPosition()` lags one change**; `Twist` wraps | FINDINGS 26 | Use MPC's own infinite-CC mapping; cap per-step deltas |
+| **`qlinks[i].SetPosition` doesn't reach the parameter**: only `ValueString` changes | COMMUNITY C3 (device, 3.10.1.8) | `Touch()` + `Twist(delta)`, or route the CC with `AddInfiniteCCToQLink` |
+| **MIDI the script sends doesn't loop back through `mappings.*`** | COMMUNITY C4 | Call the control API directly |
+| **Native calls can abort MPC while a popup is open** | COMMUNITY C6 (device, 3.10.1.8) | Check `engineMode.CurrentPopup` first |
+| **The `.ini` loader fails silently** (bad `scriptVersion`, missing `[info]`, wrong port name) | COMMUNITY C5, C9 | `scriptVersion=1.0`; port name from `/proc/asound/seq/clients`; a check like LPP3's `check-ini.sh` |
+| **No scriptable cue on the Force**: `Solo` only works in "solo tracks" mode | COMMUNITY C10 (Force, 3.10.1.12) | Emulate `mpc.force.solo` + the track button |
+| **Pad colours have no listener**; no readable selected Q-link; no API for the 8x8 pad view | COMMUNITY C8 | Poll pad colours (~100 ms) |
 | **Q-link bank changes update all 16 at once** | FINDINGS 26 | Follow a bank only when exactly one Q-link changes |
 | **No USB access** from Lua (e.g. Push 2 display is bulk USB) | FINDINGS 2 | A bridge device |
 | **Gen 2 (Live III) has no stock root**: SSH needs an Akai-signed cert, rootfs signed | FINDINGS 2, 7, 30 | Out of scope here |
