@@ -1,6 +1,6 @@
 [submodule "examples/force-link"]
 	path = examples/force-link
-	url = https://github.com/sd88me/forcelink.git
+	url = https://github.com/sd88me/MPC-ForceLink.git
 [submodule "examples/mpc-launchpad-pro-mk3"]
 	path = examples/mpc-launchpad-pro-mk3
 	url = https://github.com/fuzboxz/mpc-launchpad-pro-mk3.git
