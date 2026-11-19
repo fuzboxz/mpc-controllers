@@ -9,6 +9,8 @@ written down so you can build your own controller support without redoing the di
 - **[docs/findings/](docs/findings/)**: the raw dated research log (firmware 3.9.1 to 3.10.1.8).
 - **[skill/](skill/)**: a Claude skill that points an AI agent at the docs above.
 - **[examples/force-link](examples/force-link)**: a complete working controller (an Akai Force as a surface for an MPC Live III), as a git submodule.
+- **[examples/mpc-launchpad-pro-mk3](examples/mpc-launchpad-pro-mk3)**: a Novation Launchpad Pro MK3 as a state-aware clip grid + pads surface for an MPC (clip colours, track row, Q-Link pages), as a git submodule.
+- **[examples/mpc-launchcontrolxl-mk3](examples/mpc-launchcontrolxl-mk3)**: a Novation Launch Control XL 3 as a mixer + Q-Link surface driven through its DAW mode (two-way: MPC state painted onto encoder LEDs and OLED), as a git submodule.
 
 ## Why this exists
 Controller support on MPC is thinly documented. Akai ships a handful of MPK mini scripts and no API reference, so
