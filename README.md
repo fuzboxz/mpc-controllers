@@ -5,6 +5,7 @@ written down so you can build your own controller support without redoing the di
 
 - **[docs/capabilities.md](docs/capabilities.md)**: the API surface, by what you want to do.
 - **[docs/limitations.md](docs/limitations.md)**: the hard walls, each with the evidence.
+- **[docs/api-reference.md](docs/api-reference.md)**: every table, function and property a script can see on 3.10.1.8, with notes on what works.
 - **[docs/recipes/](docs/recipes/)**: short how-tos for things that took effort to get right.
 - **[docs/findings/](docs/findings/)**: the raw dated research log (firmware 3.9.1 to 3.10.1.8).
 - **[skill/](skill/)**: a Claude skill that points an AI agent at the docs above.

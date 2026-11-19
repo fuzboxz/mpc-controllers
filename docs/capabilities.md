@@ -33,7 +33,7 @@ device tests. Verified on 3.10.0.49 and 3.10.1.8 unless noted.
 | Switch views | `engineMode.RequestModeChange(name)`; names follow the menu labels (`"Clip Editor"`, `"List Edit"`), list them with `GetAvailableModes()` (COMMUNITY C11) |
 | Hand a button to a native control at runtime | `RemoveCCToScript`, then `mappings.controlSurface.AddCCToControl(ch, cc, "Tap Tempo")`; reverse on release (COMMUNITY C8) |
 | Quantise, loop, automation | `sequencer.quantiser.{Get,Set}{Swing,Strength,TimeDivision,...}`, `sequencer.SetLoop`, `project.AdvanceGlobalAutomationFilterType()` |
-| Everything else | the full 3.10.1.8 table dump in [mpc-launchpad-pro-mk3/docs/LUA-API-DUMP.md](https://github.com/fuzboxz/mpc-launchpad-pro-mk3/blob/main/docs/LUA-API-DUMP.md) (COMMUNITY C1) |
+| Everything else | [api-reference.md](api-reference.md): every name on 3.10.1.8, from fuzboxz's table dump (COMMUNITY C1) |
 
 ## Useful facts
 - **Q-link numbering is column-major** on the Live III: knob j (0-3, left to right) in bank b is Q-link `4*(3-j)+b` (FINDINGS 26).
