@@ -11,14 +11,18 @@ device tests. Verified on 3.10.0.49 and 3.10.1.8 unless noted.
   `/data/UserData`, `/nvme` or `/sdcard` depending on the device).
 - **Checksum = sha256(lua bytes || 36-char salt)**. The salt lives in the MPC binary; read it from your own copy, never publish it.
   The checksum check is skipped when the hardware product code is 0 (desktop software).
-- The same salt worked on 3.10.0.49 and 3.10.1.8 (FINDINGS 30).
+- The same salt worked on 3.10.0.49 and 3.10.1.8 (FINDINGS 30), and on a Force running 3.10.1.12 (COMMUNITY C9).
+- The `.ini` loader refuses **silently**: first line must be `[info]`, and `scriptVersion` must be `1.0` (semver like
+  `1.2.0` is skipped with no log). `input=`/`output=` match MPC's ALSA sequencer port name (`cat /proc/asound/seq/clients`),
+  not the USB name, and may be a comma list of candidates. A wrong name means `OnLoad` never fires (COMMUNITY C5, C9).
+- `OnLoad` runs when the device connects and can run more than once; guard your registrations.
 
 ## API by task
 | Want to | Use |
 |---|---|
-| Clip grid (launch, state, colours) | `clipMatrixAperture` (`SetColumns/SetRows` up to 16x16, `TriggerClip`, `TriggerRow`, `StopClipsOnTrack`, `SelectClip`, `SelectTrack`, `MoveToColumn`), `clipProperties[c][r].Colour/State/Selected` (listenable) |
-| Mute / solo / rec arm / pan / volume / sends | `mpc.tracks` and `tracks.normalTracks[i]` (colour, name, mute, solo, rec arm, pan, volume, sends 1-4, type) |
-| Q-links | `qlinks.AddInfiniteCCToQLink` (1-63 cw, 64-127 ccw), `SetQLinkFineAdjust`, `qlinks[i].GetPosition/SetPosition/TargetName/ValueString/IsTouched/Rotate` |
+| Clip grid (launch, state, colours) | `clipMatrixAperture` (`SetColumns/SetRows` up to 16x16, `TriggerClip`, `TriggerRow`, `StopClipsOnTrack`, `SelectClip`, `SelectTrack`, `MoveToColumn`), `clipProperties[c][r].Colour/State/Selected` (listenable), `sceneProperties[row].State`. State enum: 0 NoSlot, 1 Empty, 2 Ready, 3 WillPlay, 4 Playing, 5 WillStopPlaying, 6 WillRecord, 7 Recording, 8 WillStopRecording, 9-11 overdub (COMMUNITY C2) |
+| Mute / solo / rec arm / pan / volume / sends | `mpc.tracks` and `tracks.normalTracks[i]` (colour, name, mute, solo, rec arm, pan, volume, `VolumeDB`, sends 1-4, type). 128 slots always: count with `SizeNormalTracks()`. `currentTrack.Index` and `SetCurrentTrack(i)` use the **global** index, which differs from the `normalTracks` index when non-mixable tracks exist (COMMUNITY C7) |
+| Q-links | `qlinks.AddInfiniteCCToQLink` (1-63 cw, 64-127 ccw; verify with `IsQLinkMappedInfinite`), `SetQLinkFineAdjust`, `qlinks[i].GetPosition/TargetName/ValueString/IsTouched/Touch/Twist`. **Not `SetPosition`**: it changes the displayed value only (COMMUNITY C3) |
 | Pads | `pads.AddNoteToMpcPad` (pad <= 15, current bank), `AddNoteToForcePad` (<= 63), `AddNoteToVirtualPad` (<= 127, absolute program pad); `pads.Tap/Press/ReleaseVirtual` (1-64); `pads.LightRGBColor/LightBrightness`; `pads.CurrentBank` |
 | Press Force buttons from a script | `mpc.force.<name>` (every Force button: `Press/Release/Hold/DoublePress/Help`) |
 | Edit notes | `selectedClip.events`: `CreateNoteEvent`, `DeleteEvent`, `SetNote`, `SetNoteVelocity`, `MoveEvent`, `SetNoteRatchet` |
@@ -26,6 +30,10 @@ device tests. Verified on 3.10.0.49 and 3.10.1.8 unless noted.
 | Send MIDI out (LEDs, sysex) | `midiOut.SendMIDINoteOn/CC/Sysex(outputIndex)` |
 | Receive MIDI | callbacks `HandleMIDINoteOn/Off`, `HandleMIDICC`, `HandleMIDISysex`, `HandleTimer` |
 | Show feedback | `ui.ShowTUIFeedback`, `popups.*`, aperture `Show()/SetLabel()` |
+| Switch views | `engineMode.RequestModeChange(name)`; names follow the menu labels (`"Clip Editor"`, `"List Edit"`), list them with `GetAvailableModes()` (COMMUNITY C11) |
+| Hand a button to a native control at runtime | `RemoveCCToScript`, then `mappings.controlSurface.AddCCToControl(ch, cc, "Tap Tempo")`; reverse on release (COMMUNITY C8) |
+| Quantise, loop, automation | `sequencer.quantiser.{Get,Set}{Swing,Strength,TimeDivision,...}`, `sequencer.SetLoop`, `project.AdvanceGlobalAutomationFilterType()` |
+| Everything else | [api-reference.md](api-reference.md): every name on 3.10.1.8, from fuzboxz's table dump (COMMUNITY C1) |
 
 ## Useful facts
 - **Q-link numbering is column-major** on the Live III: knob j (0-3, left to right) in bank b is Q-link `4*(3-j)+b` (FINDINGS 26).
