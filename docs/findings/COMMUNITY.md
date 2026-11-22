@@ -120,9 +120,8 @@ for audio dropouts.
 `mpc.tracks.GetTrackRecordArmed(name)`, `SetTrackRecordArmed(name, bool)` and `GetSolo(name)` work when given the
 track's name (`currentTrack.Name.value`); MOVE's record-arm button is built on them. Our FINDINGS 30/33 tried these
 functions only with an index (`(self,i)`, `(i)`, `(i+1)`) and concluded they always error. **Corrects** that: the error
-was the argument type. Not yet tried with a name: `Get/SetTrackInputPort`, `Get/SetTrackInputChannel`,
-`Get/SetTrackMonitorState`. If they take a name too, per-track MIDI input from a script (limitations, FINDINGS 33) may be
-reachable. Names need not be unique in a project, so this is safest for the current track.
+was the argument type. **Followed up in FINDINGS 34** (Live III, 3.10.1.12): `Get/SetTrackInputPort`, `Get/SetTrackInputChannel` and
+`Get/SetTrackMonitorState` also work with a name, so per-track MIDI input *is* reachable from a script. Names need not be unique in a project, so this is safest for the current track.
 
 ## C14. Pad colours as properties, every bank (MOVE, device)
 `mpc.controlSurface.pads.virtual[vp].Colour.value` (vp 0-127, 0-based, ARGB) gives every pad of every bank as a property

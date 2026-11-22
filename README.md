@@ -7,7 +7,7 @@ written down so you can build your own controller support without redoing the di
 - **[docs/limitations.md](docs/limitations.md)**: the hard walls, each with the evidence.
 - **[docs/api-reference.md](docs/api-reference.md)**: every table, function and property a script can see on 3.10.1.8, with notes on what works.
 - **[docs/recipes/](docs/recipes/)**: short how-tos for things that took effort to get right.
-- **[docs/findings/](docs/findings/)**: the raw dated research log (firmware 3.9.1 to 3.10.1.8).
+- **[docs/findings/](docs/findings/)**: the raw dated research log (firmware 3.9.1 to 3.10.1.12).
 - **[skill/](skill/)**: a Claude skill that points an AI agent at the docs above.
 - **[examples/force-link](examples/force-link)**: a complete working controller (an Akai Force as a surface for an MPC Live III), as a git submodule.
 - **[examples/mpc-launchpad-pro-mk3](examples/mpc-launchpad-pro-mk3)** (v1.3.0): a Novation Launchpad Pro MK3 as a state-aware clip grid + pads surface for an MPC (clip colours, track row, Q-Link pages), as a git submodule.
@@ -40,7 +40,7 @@ Both firmwares have a Lua controller-script loader (found by reading the binarie
 
 In practice: on 3.9.1 a controller is an **input surface** (pads, buttons, knobs) with no clip colours or knob names.
 On 3.10 it can be **state-aware**: a clip grid with live colours, mute/solo/arm rows, named Q-links. Even on 3.10
-there are real limits (no state dump, no per-track MIDI input, no non-current-track editing): see
+there are real limits (no state dump, no non-current-track editing): see
 [limitations](docs/limitations.md).
 
 ## Community scripts
@@ -59,7 +59,7 @@ Controller scripts built on this repo by other people. What we learned from them
 Built one? Open a PR adding a row (and, if you like, your repo as a submodule under `examples/`): the controller, a link, and the device and firmware you tested on.
 
 ## Scope
-Verified on **MPC 3.10.0.49 and 3.10.1.8** (Live III, Gen 2) unless a note says otherwise. Each claim is tagged with the
+Verified on **MPC 3.10.0.49, 3.10.1.8 and 3.10.1.12** (Live III, Gen 2) unless a note says otherwise. Each claim is tagged with the
 build it was checked on; behaviour may change in later firmware. Some findings are about the Force (MPC 3.9.1) and
 say so. Re-test before relying on anything here.
 
