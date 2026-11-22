@@ -6,7 +6,7 @@ Each wall lists how we hit it and what (if anything) gets round it.
 |---|---|---|
 | **No state dump**: `#GetState` / `mpc.GetState` are nil in a script (the registrar exists in the binary but doesn't reach Lua) | FINDINGS 19, 25 (device, 3.10.0.49) | Read MPC's memory from a preloaded shim (needs root) |
 | **No LED/light state for Force controls**: scripts get no feedback for `mpc.force.*` buttons | FINDINGS 30 | Derive lights from state you can read, or dim/bright-while-held |
-| **Port numbers for track MIDI input are opaque**: `SetTrackInputPort(name, n)` works, but which `n` is which port is unmapped (0x7FFFFFFD = probably All) | FINDINGS 34 (device, Live III 3.10.1.12) | Set the port by hand once and read it back with `GetTrackInputPort(name)` |
+| **Track input-port values are opaque IDs**, not indices or name hashes (0x7FFFFFFD = default/All; e.g. Force Link = -809768406). Stable across a restart and saved in the project; unknown across units or firmware | FINDINGS 34 (device, Live III 3.10.1.12) | Set the port by hand once and read it with `GetTrackInputPort(name)`, or copy it from a track the user set |
 | **Cannot drive a non-current track** directly: `aperture.SelectTrack` moves MPC's own current track; there is no separate controller track | FINDINGS 33 | Route by MIDI input instead: set a track's input port/channel/monitoring by name (FINDINGS 34) |
 | **Note editing only on the selected clip**: no per-clip events object | FINDINGS 33 | Select the clip first, or native route |
 | **Scale/root of pad perform is invisible**: `padPerform`/`keyboardControl` are only the two buttons | FINDINGS 29 | Read from MPC's memory (offsets per build) |
