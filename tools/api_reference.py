@@ -15,6 +15,7 @@ CHUNK = 1400  # a line at least this long continues on the next line with the sa
 
 # Hand-kept notes: what we know beyond "this name exists". Keys are normalised paths.
 TABLE_NOTES = {
+    "mpc.clipMatrix": "`CopyClip(sc, sr, dc, dr)`, `DeleteClip(c, r)`, `InsertRows(r, n)`, `CopyRow(src, dst)` used on device (COMMUNITY C16). Every function call costs ~2.9 ms (C12).",
     "dev": "The device table, named after the script file. MPC calls the `Handle*` and `On*` functions; you define them.",
     "dev.clipMatrixAperture": "The script's own window on the clip matrix (verified FINDINGS 18, 30). `Show()`/`SetLabel()` draw it on the MPC screen.",
     "dev.clipMatrixAperture.clipProperties[c][r]": "Per-slot properties, listenable. `State` enum: 0 NoSlot, 1 Empty, 2 Ready, 3 WillPlay, 4 Playing, 5 WillStopPlaying, 6 WillRecord, 7 Recording, 8 WillStopRecording, 9 WillOverdub, 10 Overdubbing, 11 WillStopOverdubbing (COMMUNITY C2). The dump stops at depth 4, so the slot members aren't listed; `Colour`, `State`, `Selected` are verified.",
@@ -23,12 +24,13 @@ TABLE_NOTES = {
     "dev.mappings.controlSurface.qlinks": "Hand a CC to an MPC Q-link natively. `AddInfiniteCCToQLink` verified (LCXL3, 16/16 mapped); check with `IsQLinkMappedInfinite`.",
     "dev.mappings.controlSurface": "`AddCCToControl(ch, cc, \"Tap Tempo\")` takes a control's display name (COMMUNITY C8).",
     "dev.midiOut": "`outputIndex` = order of the `output=` lines in the `.ini`. Sysex payload without F0/F7. Script-sent MIDI doesn't loop back through `mappings` (COMMUNITY C4).",
-    "mpc.tracks": "**The `Get*/Set*` functions that take a track index error in every call form tried** (FINDINGS 30, 33). Use `normalTracks[i]` instead. Known to work: `GetCount`, `SizeNormalTracks`, `SetCurrentTrack` (global index, COMMUNITY C7).",
+    "mpc.tracks": "**The `Get*/Set*` functions that take a track index error in every call form tried** (FINDINGS 30, 33). They take the track **name** instead: `GetTrackRecordArmed(name)`, `SetTrackRecordArmed(name, b)`, `GetSolo(name)` work (COMMUNITY C13); the rest are untested with a name. Known to work: `GetCount`, `SizeNormalTracks`, `SetCurrentTrack` (global index, COMMUNITY C7).",
     "mpc.tracks.normalTracks[i]": "128 slots whatever the project holds; count with `SizeNormalTracks()`. Index = global clip-matrix column, but not the MPC UI's track number when non-mixable tracks exist (COMMUNITY C7).",
     "mpc.tracks.masterTracks[i]": "Same shape as `normalTracks[i]`. Presence only.",
     "mpc.tracks.currentTrack": "`Index` is global (normal tracks, then master). Plugin-preset calls present; confirm on hardware.",
     "mpc.controlSurface.qlinks[i]": "16, 0-based, column-major on the Live III (FINDINGS 26). `GetPosition` lags one change. **`SetPosition` only changes the displayed value** (COMMUNITY C3); use `Touch()` + `Twist(delta)`. `SetValue` is untested.",
-    "mpc.controlSurface.pads": "Virtual pad indices are 1-64. `Tap` may ignore velocity; use `Press` + `Release`. No colour listener: poll `pads[i].GetColour()` (COMMUNITY C8).",
+    "mpc.controlSurface.pads.virtual": "`virtual[vp].Colour.value`, vp 0-127: every pad of every bank as a property read (COMMUNITY C14).",
+    "mpc.controlSurface.pads": "Each function here costs ~2.9 ms (COMMUNITY C12). Virtual pad indices are 1-64. `SetCurrentBank` is ignored in Step Seq. `Tap` may ignore velocity; use `Press` + `Release`. No colour listener: poll `pads[i].GetColour()` (COMMUNITY C8).",
     "mpc.force": "Every Force button, pressable from any device. No LED/state readback (FINDINGS 30).",
     "mpc.engineMode": "`RequestModeChange(name)` takes menu-label names (COMMUNITY C11). Check `CurrentPopup` before project-scoped calls (COMMUNITY C6).",
     "mpc.clipMatrix.selectedClip.events": "Create/edit/delete only; no way to read or iterate events (FINDINGS 18, 25, 33).",

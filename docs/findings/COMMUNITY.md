@@ -10,11 +10,13 @@ Firmware is **MPC 3.10.1.8 (build 38fdde70994), Live III** unless noted.
 | **LPP3** | [mpc-launchpad-pro-mk3](https://github.com/fuzboxz/mpc-launchpad-pro-mk3) (Novation Launchpad Pro MK3) | [@fuzboxz](https://github.com/fuzboxz) | device, 2026-11-17/18 |
 | **LCXL3** | [mpc-launchcontrolxl-mk3](https://github.com/fuzboxz/mpc-launchcontrolxl-mk3) (Novation Launch Control XL 3) | [@fuzboxz](https://github.com/fuzboxz) | device, 2026-11-18 (XL 3 fw 1.1.11) |
 | **LPMK3** | [mpc-launchpad-mini-mk3](https://github.com/fuzboxz/mpc-launchpad-mini-mk3) (Novation Launchpad Mini MK3) | [@fuzboxz](https://github.com/fuzboxz) | device, 2026-11-18 |
+| **MOVE** | [mpc-control-script-move](https://github.com/ryanmgilmore/mpc-control-script-move) (MPC side) + [move-mpc-control](https://github.com/ryanmgilmore/move-mpc-control) (Schwung module): Ableton Move as pads, clips, steps, Q-links | [@ryanmgilmore](https://github.com/ryanmgilmore) | device, **MPC Live II, MPC 3.10.1**, 2026-11-13/19 |
 | **NK** | [KorgNanoKontrolMk1_4_AkaiForce](https://github.com/kagusta1/KorgNanoKontrolMk1_4_AkaiForce) (Korg nanoKONTROL Mk1) | [@kagusta1](https://github.com/kagusta1) | device, **Akai Force, MPC 3.10.1.12**, 2026-11-16/17 |
 
 Thanks to fuzboxz for publishing the Novation scripts, with device-test plans that make it clear which claims were
 checked on hardware, and to kagusta1 for the first script we know of running on a Force (and on a newer build than
-ours). LPP3 also used NK as a reference.
+ours). LPP3 also used NK as a reference. Thanks to ryanmgilmore for MOVE, the first script we know of on a Gen 1
+MPC (Live II), with device-timed performance notes.
 
 ---
 
@@ -106,6 +108,57 @@ which a script can't read back (FINDINGS 30), so NK returns to a fixed mode afte
 differ by firmware. NK tries a list of candidates per view and logs `GetAvailableModes()` when none works.
 Also: `mpc.sequencer.TogglePlayStart`, `mpc.sequencer.JumpToPulse(0)` (works during playback),
 `mpc.force.stop.DoublePress()`. `mpc.tracks.Get/SetTrackMonitorState` error in every call form (matches FINDINGS 33).
+
+## C12. Native function calls cost one audio block each; property reads are free (MOVE, device bench 2026-11-13)
+Each call to a native **function** such as `pads.LightRGBColor`, `LightBrightness` or `IsPressedVirtual` took
+**about 2.9 ms** on the Live II (one audio block). 32 of them stalled the MPC's screen for about 90 ms. Reading a
+**property** (`.value`) costs next to nothing (measured). So poll properties, keep native calls for actions, and never
+make dozens of function calls per tick. MOVE runs a 20 ms timer and logs per-handler timings (`timer.Now()`) to check
+for audio dropouts.
+
+## C13. `mpc.tracks` functions take the track **name**, not an index (MOVE, device)
+`mpc.tracks.GetTrackRecordArmed(name)`, `SetTrackRecordArmed(name, bool)` and `GetSolo(name)` work when given the
+track's name (`currentTrack.Name.value`); MOVE's record-arm button is built on them. Our FINDINGS 30/33 tried these
+functions only with an index (`(self,i)`, `(i)`, `(i+1)`) and concluded they always error. **Corrects** that: the error
+was the argument type. Not yet tried with a name: `Get/SetTrackInputPort`, `Get/SetTrackInputChannel`,
+`Get/SetTrackMonitorState`. If they take a name too, per-track MIDI input from a script (limitations, FINDINGS 33) may be
+reachable. Names need not be unique in a project, so this is safest for the current track.
+
+## C14. Pad colours as properties, every bank (MOVE, device)
+`mpc.controlSurface.pads.virtual[vp].Colour.value` (vp 0-127, 0-based, ARGB) gives every pad of every bank as a property
+read, with no function calls (C12). `pads.LightRGBColor(i)` is 1-based and returns `"{rrggbb}"`, but it's a function.
+Mute is visible in the colours: in Pad Mute a muted pad shows MPC's mute orange, blinking while the transport runs.
+`pads.IsPressedVirtual` never saw a press made through the script (861 calls, all false).
+
+## C15. Step Seq, pad banks, recording (MOVE, device)
+- Step Seq edits the **last pad hit**: `pads.LastHitPad()` (1 = A01) shows the lane. To change lane, MOVE sets the bank,
+  turns on Pad Sel (`controlSurface.fKey4`), then presses the pad at low velocity so nothing sounds.
+- `pads.SetCurrentBank` is **ignored in Step Seq**; outside it, read `CurrentBank.value` back before relying on it.
+  Only the current bank answers in Pad Sel.
+- **Retrospective record** has no script function: `controlSurface.shift.Hold()`, `record.Press()`, `shift.Release()`
+  does it, when Preferences > "Record and Overdub Shift Behaviour" is "Retrospective Record".
+- `project.GlobalAutomationFilterType.value` can be written (`"Read"`/`"Write"`).
+- Quantise applies only while Timing Correct is on (`sequencer.quantiser.Enabled`); turning it on for one tick around
+  the press was not enough.
+
+## C16. Clip and scene edits (MOVE, device)
+Used by shipped features: `clipMatrix.CopyClip(srcCol, srcRow, dstCol, dstRow)`, `DeleteClip(col, row)`,
+`InsertRows(row, count)` + `CopyRow(src, dst)` (duplicate a scene), `GetRows()`, `GetSelectedClipColumn/Row()`.
+`currentTrack.PluginPresetName` can be read and listened to, but MOVE saw it not follow a preset changed on the MPC
+until the track was re-entered. `aperture.trackProperties[c].Colour/State` gives per-column track LEDs. `aperture`
+`MoveLeft/Right` are proven there; `MoveTo` is not.
+**Not reachable from 3.10.1 scripting** (MOVE): doubling a clip's length, the metronome's play mode, the plugin's name
+on a plugin track, pads brightening as they play in Main.
+
+## C17. Install and access on a Live II (MOVE)
+- MPC 3.10.1 has a **developer mode** (Preferences > Enhancements) that starts an SSH server, user `root`, **no
+  password by default** (one can be set in the developer settings). On the Live II that's the only way to reach
+  internal storage (`/sdcard`). Whether the Live III has the same switch is untested here; our limitations say Gen 2 has
+  no stock root (FINDINGS 2, 7, 30).
+- Scripts are found only on **internal storage** (`MPC Documents/Devices/`), not on SD, SSD or USB, and are read once
+  at startup: restart MPC after copying.
+- A good pattern: listen **and** poll-and-diff, so a listener that never fires costs latency, not correctness. MOVE also
+  maps nothing but sysex until its surface says hello, and unmaps everything when heartbeats stop.
 
 ## Still unconfirmed in those projects
 `AddCCToScript` on MIDI channels other than 0 was confirmed by LCXL3 for channels 1, 7 and 16 (1-based) on device.
