@@ -6,7 +6,7 @@ Each wall lists how we hit it and what (if anything) gets round it.
 |---|---|---|
 | **No state dump**: `#GetState` / `mpc.GetState` are nil in a script (the registrar exists in the binary but doesn't reach Lua) | FINDINGS 19, 25 (device, 3.10.0.49) | Read MPC's memory from a preloaded shim (needs root) |
 | **No LED/light state for Force controls**: scripts get no feedback for `mpc.force.*` buttons | FINDINGS 30 | Derive lights from state you can read, or dim/bright-while-held |
-| **No per-track MIDI input**: `normalTracks[i]` has no input port/channel/monitor; the getters on `mpc.tracks` error | FINDINGS 33 (device, 3.10.1.8) | Set the track's input by hand in MPC, or a native shim |
+| **No per-track MIDI input** (maybe): `normalTracks[i]` has no input port/channel/monitor. The `mpc.tracks` functions error with an index, but take the track *name* (COMMUNITY C13); `SetTrackInputPort(name, …)` is untested | FINDINGS 33 (device, 3.10.1.8), COMMUNITY C13 | Try the name form; else set the input by hand in MPC, or a native shim |
 | **Cannot drive a non-current track**: `aperture.SelectTrack` moves MPC's own current track; there is no separate controller track | FINDINGS 33 | As above |
 | **Note editing only on the selected clip**: no per-clip events object | FINDINGS 33 | Select the clip first, or native route |
 | **Scale/root of pad perform is invisible**: `padPerform`/`keyboardControl` are only the two buttons | FINDINGS 29 | Read from MPC's memory (offsets per build) |
@@ -17,6 +17,8 @@ Each wall lists how we hit it and what (if anything) gets round it.
 | **The `.ini` loader fails silently** (bad `scriptVersion`, missing `[info]`, wrong port name) | COMMUNITY C5, C9 | `scriptVersion=1.0`; port name from `/proc/asound/seq/clients`; a check like LPP3's `check-ini.sh` |
 | **No scriptable cue on the Force**: `Solo` only works in "solo tracks" mode | COMMUNITY C10 (Force, 3.10.1.12) | Emulate `mpc.force.solo` + the track button |
 | **Pad colours have no listener**; no readable selected Q-link; no API for the 8x8 pad view | COMMUNITY C8 | Poll pad colours (~100 ms) |
+| **Each native function call costs ~2.9 ms** (one audio block); 32 per tick stall the screen | COMMUNITY C12 (device, Live II) | Poll properties (`.value`), which are free; keep function calls for actions |
+| **Not reachable**: doubling a clip's length, metronome play mode, a plugin's name, retrospective record (except by pressing Shift + Rec) | COMMUNITY C15, C16 | |
 | **Q-link bank changes update all 16 at once** | FINDINGS 26 | Follow a bank only when exactly one Q-link changes |
 | **No USB access** from Lua (e.g. Push 2 display is bulk USB) | FINDINGS 2 | A bridge device |
 | **Gen 2 (Live III) has no stock root**: SSH needs an Akai-signed cert, rootfs signed | FINDINGS 2, 7, 30 | Out of scope here |

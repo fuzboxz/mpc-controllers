@@ -16,15 +16,20 @@ device tests. Verified on 3.10.0.49 and 3.10.1.8 unless noted.
   `1.2.0` is skipped with no log). `input=`/`output=` match MPC's ALSA sequencer port name (`cat /proc/asound/seq/clients`),
   not the USB name, and may be a comma list of candidates. A wrong name means `OnLoad` never fires (COMMUNITY C5, C9).
 - `OnLoad` runs when the device connects and can run more than once; guard your registrations.
+- Scripts are read from internal storage only, once at startup: restart MPC after copying. MPC 3.10.1's developer
+  mode (Preferences > Enhancements) gives SSH on a Live II (COMMUNITY C17).
+- **Cost:** each native function call takes ~2.9 ms; property reads are free. Budget calls per tick (COMMUNITY C12).
 
 ## API by task
 | Want to | Use |
 |---|---|
 | Clip grid (launch, state, colours) | `clipMatrixAperture` (`SetColumns/SetRows` up to 16x16, `TriggerClip`, `TriggerRow`, `StopClipsOnTrack`, `SelectClip`, `SelectTrack`, `MoveToColumn`), `clipProperties[c][r].Colour/State/Selected` (listenable), `sceneProperties[row].State`. State enum: 0 NoSlot, 1 Empty, 2 Ready, 3 WillPlay, 4 Playing, 5 WillStopPlaying, 6 WillRecord, 7 Recording, 8 WillStopRecording, 9-11 overdub (COMMUNITY C2) |
-| Mute / solo / rec arm / pan / volume / sends | `mpc.tracks` and `tracks.normalTracks[i]` (colour, name, mute, solo, rec arm, pan, volume, `VolumeDB`, sends 1-4, type). 128 slots always: count with `SizeNormalTracks()`. `currentTrack.Index` and `SetCurrentTrack(i)` use the **global** index, which differs from the `normalTracks` index when non-mixable tracks exist (COMMUNITY C7) |
+| Mute / solo / rec arm / pan / volume / sends | `mpc.tracks` and `tracks.normalTracks[i]` (colour, name, mute, solo, rec arm, pan, volume, `VolumeDB`, sends 1-4, type). The `mpc.tracks.Get*/Set*` functions take the track **name**, e.g. `SetTrackRecordArmed(name, true)` (COMMUNITY C13). 128 slots always: count with `SizeNormalTracks()`. `currentTrack.Index` and `SetCurrentTrack(i)` use the **global** index, which differs from the `normalTracks` index when non-mixable tracks exist (COMMUNITY C7) |
 | Q-links | `qlinks.AddInfiniteCCToQLink` (1-63 cw, 64-127 ccw; verify with `IsQLinkMappedInfinite`), `SetQLinkFineAdjust`, `qlinks[i].GetPosition/TargetName/ValueString/IsTouched/Touch/Twist`. **Not `SetPosition`**: it changes the displayed value only (COMMUNITY C3) |
+| Pad colours, cheaply | `pads.virtual[vp].Colour.value` (0-127, every bank, a property: no 2.9 ms call, COMMUNITY C12, C14) |
 | Pads | `pads.AddNoteToMpcPad` (pad <= 15, current bank), `AddNoteToForcePad` (<= 63), `AddNoteToVirtualPad` (<= 127, absolute program pad); `pads.Tap/Press/ReleaseVirtual` (1-64); `pads.LightRGBColor/LightBrightness`; `pads.CurrentBank` |
 | Press Force buttons from a script | `mpc.force.<name>` (every Force button: `Press/Release/Hold/DoublePress/Help`) |
+| Copy / delete clips and scenes | `clipMatrix.CopyClip(sc, sr, dc, dr)`, `DeleteClip(c, r)`, `InsertRows(r, n)` + `CopyRow(src, dst)` (COMMUNITY C16) |
 | Edit notes | `selectedClip.events`: `CreateNoteEvent`, `DeleteEvent`, `SetNote`, `SetNoteVelocity`, `MoveEvent`, `SetNoteRatchet` |
 | Transport / undo | `sequencer.*`, `commandManager.Undo/Redo`, `clipMatrix.StopAllClips` |
 | Send MIDI out (LEDs, sysex) | `midiOut.SendMIDINoteOn/CC/Sysex(outputIndex)` |

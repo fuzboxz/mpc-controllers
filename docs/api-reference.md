@@ -84,7 +84,7 @@ Hand a CC to an MPC Q-link natively. `AddInfiniteCCToQLink` verified (LCXL3, 16/
 ## Tracks
 
 ### `mpc.tracks`
-**The `Get*/Set*` functions that take a track index error in every call form tried** (FINDINGS 30, 33). Use `normalTracks[i]` instead. Known to work: `GetCount`, `SizeNormalTracks`, `SetCurrentTrack` (global index, COMMUNITY C7).
+**The `Get*/Set*` functions that take a track index error in every call form tried** (FINDINGS 30, 33). They take the track **name** instead: `GetTrackRecordArmed(name)`, `SetTrackRecordArmed(name, b)`, `GetSolo(name)` work (COMMUNITY C13); the rest are untested with a name. Known to work: `GetCount`, `SizeNormalTracks`, `SetCurrentTrack` (global index, COMMUNITY C7).
 - **Functions:** `CreateTrack`, `GetAutomationFilterType`, `GetCount`, `GetCurrentTrackName`, `GetGlobalInsertEnabled`, `GetHasAutomation`, `GetInsertEnabled`, `GetMute`, `GetSendLevel`, `GetSolo`, `GetSoloMute`, `GetTrackCVPort`, `GetTrackColour`, `GetTrackGatePort`, `GetTrackIndependentLength`, `GetTrackInputChannel`, `GetTrackInputPort`, `GetTrackLengthType`, `GetTrackMidiBankEnable`, `GetTrackMidiBankLsb`, `GetTrackMidiBankMsb`, `GetTrackMidiProgramNumber`, `GetTrackMidiProgramNumberEnable`, `GetTrackMonitorState`, `GetTrackMuteGroupIndex`, `GetTrackOutputChannel`, `GetTrackOutputPort`, `GetTrackPadsFollowTrackColour`, `GetTrackPan`, `GetTrackRecordArmed`, `GetTrackSkipFromRowLaunch`, `GetTrackTransposition`, `GetTrackVelocityScale`, `GetTrackVolume`, `IsTrackAudio`, `IsTrackInstrument`, `IsTrackMaster`, `IsTrackMidiTriggered`, `IsTrackMixable`, `IsTrackPadBased`, `Remove`, `RemoveAll`, `ResetTrackChannelStrip`, `SetAutomationFilterType`, `SetCurrentTrack`, `SetGlobalInsertEnabled`, `SetInsertEnabled`, `SetMute`, `SetSendLevel`, `SetSolo`, `SetTrackCVPort`, `SetTrackColour`, `SetTrackGatePort`, `SetTrackIndependentLength`, `SetTrackInputChannel`, `SetTrackInputPort`, `SetTrackMidiBankEnable`, `SetTrackMidiBankLsb`, `SetTrackMidiBankMsb`, `SetTrackMidiProgramNumber`, `SetTrackMidiProgramNumberEnable`, `SetTrackMonitorState`, `SetTrackMuteGroupIndex`, `SetTrackOutputChannel`, `SetTrackOutputPort`, `SetTrackPadsFollowTrackColour`, `SetTrackPan`, `SetTrackRecordArmed`, `SetTrackSkipFromRowLaunch`, `SetTrackTransposition`, `SetTrackVelocityScale`, `SetTrackVolume`, `Size`, `SizeMasterTracks`, `SizeMidiTracks`, `SizeNonMidiTracks`, `SizeNormalTracks`, `TrackAllNotesOff`, `TrackSupportsLayers`, `TrackSupportsSampleEditProgram`, `TrackSupportsSixteenLevels`
 - **Properties:** `Count` (0)
 - **Sub-tables:** `currentTrack`, `masterTracks`, `normalTracks`
@@ -122,6 +122,7 @@ Same shape as `normalTracks[i]`. Presence only.
 ## Clip matrix
 
 ### `mpc.clipMatrix`
+`CopyClip(sc, sr, dc, dr)`, `DeleteClip(c, r)`, `InsertRows(r, n)`, `CopyRow(src, dst)` used on device (COMMUNITY C16). Every function call costs ~2.9 ms (C12).
 - **Functions:** `AllClipsStopped`, `ClearRow`, `ClipIsPlaying`, `ClipIsRecording`, `ClipIsStopped`, `CopyClip`, `CopyRow`, `CopyTrack`, `CreateAudioTrack`, `CreateCVTrack`, `CreateClip`, `CreateDrumTrack`, `CreateKeygroupTrack`, `CreateMidiTrack`, `CreatePluginTrack`, `DeleteClip`, `DeleteRow`, `DeleteTrack`, `EditClip`, `EditTrack`, `FlattenClip`, `FlattenClipElastique`, `GetClipColour`, `GetClipName`, `GetColumns`, `GetRows`, `GetSelectedClipColumn`, `GetSelectedClipRow`, `GetTrackColour`, `GetTrackName`, `HasClip`, `InsertRowAndCapture`, `InsertRows`, `SelectClip`, `SelectRow`, `SelectTrack`, `SetClipEnd`, `SetClipLoopEnd`, `SetClipLoopStart`, `SetClipName`, `SetClipStart`, `SetRowColour`, `SetRowTempoTrigger`, `SetTrackName`, `StopAllClips`, `StopTrackClips`, `TrackIsPlaying`, `TrackIsRecording`, `TrackIsStopped`, `TriggerArrangeTrack`, `TriggerClip`, `TriggerRow`
 - **Sub-tables:** `selectedClip`
 
@@ -199,7 +200,7 @@ Verified in LPP3/LCXL3.
 - **Functions:** `DoublePress`, `Hold`, `Press`, `Release`, `Twist`
 
 ### `mpc.controlSurface.pads`
-Virtual pad indices are 1-64. `Tap` may ignore velocity; use `Press` + `Release`. No colour listener: poll `pads[i].GetColour()` (COMMUNITY C8).
+Each function here costs ~2.9 ms (COMMUNITY C12). Virtual pad indices are 1-64. `SetCurrentBank` is ignored in Step Seq. `Tap` may ignore velocity; use `Press` + `Release`. No colour listener: poll `pads[i].GetColour()` (COMMUNITY C8).
 - **Indexed:** 0..15
 - **Functions:** `EnsurePadVisible`, `GetCurrentBank`, `IsPadVisible`, `IsPressed`, `IsPressedVirtual`, `LastHitPad`, `LightBrightness`, `LightRGBColor`, `Press`, `PressVirtual`, `Release`, `ReleaseAll`, `ReleaseVirtual`, `SetCurrentBank`, `Tap`, `TapVirtual`, `Velocity`, `VelocityVirtual`
 - **Properties:** `CurrentBank` (0)
@@ -210,6 +211,7 @@ Virtual pad indices are 1-64. `Tap` may ignore velocity; use `Press` + `Release`
 - **Properties:** `Colour` (0)
 
 ### `mpc.controlSurface.pads.virtual`
+`virtual[vp].Colour.value`, vp 0-127: every pad of every bank as a property read (COMMUNITY C14).
 - **Indexed:** 0..127
 
 ### `mpc.controlSurface.touchStrip`
